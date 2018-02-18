@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/edit_name"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical"
+
+    android:layout_gravity="center" android:orientation="vertical"  >
+
+    <TextView
+        android:id="@+id/lbl_begindate"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="50dp"
+       android:layout_marginTop="5dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/colortextt"
+        android:text="@string/beginDate" />
+
+    <EditText
+        android:id="@+id/txt_date_begin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="15dp"
+        android:layout_marginHorizontal="50dp"
+        android:hint="@string/spinewhint"
+        android:textAlignment="center"
+        android:imeOptions="actionDone"
+        android:inputType="datetime" />
+
+    <TextView
+        android:id="@+id/lbl_Srt_order"
+        android:text="Sort order"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="50dp"
+
+        android:layout_width="wrap_content"
+        android:textColor="@color/colortextt"
+        android:layout_height="wrap_content" />
+
+    <Spinner
+        android:id="@+id/txt_spinow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginBottom="15dp"
+        android:entries="@array/list_spinow"
+        android:imeOptions="actionDone"
+        android:background="@android:drawable/edit_text"/>/>
+    <TextView
+        android:id="@+id/lbl_desc"
+        android:text="New desc values"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="50dp"
+
+        android:textColor="@color/colortextt"
+        android:layout_height="wrap_content" />
+
+    <CheckBox android:id="@+id/checkbox_arts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:text="Arts" />
+    <CheckBox android:id="@+id/checkbox_FS_ST"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:text="fashion &amp; Style" />
+    <CheckBox android:id="@+id/checkbox_sport"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="50dp"
+        android:layout_marginBottom="5dp"
+        android:text="Sport" />
+    <Button
+        android:paddingTop="20dp"
+        android:id="@+id/btnSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onArticleSearch"
+        android:text="@string/save" />
+
+
+</LinearLayout>
