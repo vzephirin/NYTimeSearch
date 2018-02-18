@@ -29,6 +29,7 @@ public class ArticleArrayAdapter extends RecyclerView.Adapter<ArticleArrayAdapte
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ImageView image;
         public TextView tvTitle;
+        public TextView tvspinet;
        // public TextView tvAuthor;
 
 
@@ -39,6 +40,7 @@ public class ArticleArrayAdapter extends RecyclerView.Adapter<ArticleArrayAdapte
 
             image = (ImageView)itemView.findViewById(R.id.imageItem);
             tvTitle = (TextView)itemView.findViewById(R.id.tvtileItem);
+            tvspinet=(TextView)itemView.findViewById(R.id.description);
            // tvAuthor = (TextView)itemView.findViewById(R.id.tvAuthor);
             itemView.setOnClickListener(this);
         }
@@ -89,6 +91,7 @@ public class ArticleArrayAdapter extends RecyclerView.Adapter<ArticleArrayAdapte
 
         // Populate data into the template view using the data object
         viewHolder.tvTitle.setText(article.getHeadline());
+        viewHolder.tvspinet.setText(article.getSpinset());
         //viewHolder.thumbNailr.setText(book.getAuthor());
         String thumbNail =article.getThumbNail();
 /*
@@ -97,9 +100,7 @@ public class ArticleArrayAdapter extends RecyclerView.Adapter<ArticleArrayAdapte
             Log.d("text","test");
         }*/
         Glide.with(getContext())
-                .load(Uri.parse(article.getThumbNail()))
-                .placeholder(R.drawable.ic_nocover)
-                .into(viewHolder.image);
+                .load(Uri.parse(article.getThumbNail())).into(viewHolder.image);
         // Return the completed view to render on screen
     }
 

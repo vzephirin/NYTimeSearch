@@ -1,8 +1,15 @@
 package mbds.ht.nytimesearch.activities;
 
+import android.app.PendingIntent;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,14 +33,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import cz.msebera.android.httpclient.Header;
 import mbds.ht.nytimesearch.R;
 import mbds.ht.nytimesearch.adapters.ArticleArrayAdapter;
 import mbds.ht.nytimesearch.adapters.ItemClickListenerInterface;
 import mbds.ht.nytimesearch.models.Article;
+import mbds.ht.nytimesearch.models.QueryClass;
 import mbds.ht.nytimesearch.services.EndlessRecyclerViewScrollListener;
 
 public class SearchActivity extends AppCompatActivity implements ItemClickListenerInterface, FilterDialogFragment.EditCustomDialogListener {
@@ -42,7 +50,9 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
     RecyclerView rvResult;
     ArrayList<Article> arrayArticle;
     ArticleArrayAdapter adapter;
+    RequestParams params;
     String queryt = null;
+    HashMap<String, String> queryference =null;
     private EndlessRecyclerViewScrollListener scrollListener;
 
 
@@ -63,7 +73,7 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
         rvResult = (RecyclerView) findViewById(R.id.gvResults);
         arrayArticle = new ArrayList<>();
         adapter = new ArticleArrayAdapter(this, arrayArticle);
-
+        params = new RequestParams();
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
 
         rvResult.setAdapter(adapter);
@@ -96,19 +106,32 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
         //  --> Deserialize and construct new model objects from the API response
         //  --> Append the new data objects to the existing set of items inside the array of items
         //  --> Notify the adapter of the new items made with `notifyItemRangeInserted()`
-        if (queryt != null) onArticleSearchSroll(queryt, offset);
+        onArticleSearchSroll(queryt, offset);
     }
 
     public void onArticleSearch(String query, int page) {
+        //if (queryference==null){}
         // String query = etSearch.getText().toString();
-        Toast.makeText(this, "Searching for " + query, Toast.LENGTH_LONG).show();
+
         if (isOnline()) {
+           // Toast.makeText(this, "requete test " + query, Toast.LENGTH_LONG).show();
             AsyncHttpClient client = new AsyncHttpClient();
             String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-            RequestParams params = new RequestParams();
+
             params.put("api-key", "945373ce2cf842b3a4433c1097bf4840");
             params.put("page", 0);
-            params.put("query", query);
+           if(query!=null) params.put("query", query);
+          //  Toast.makeText(this, "Searching for " + params.toString(), Toast.LENGTH_LONG).show();
+           /*
+            if (queryference!=null) {
+                if (queryference.get("desc") != null) params.put("fq", queryference.get("desc"));
+                if (queryference.get("begin_date") != null)
+                    params.put("begin_date", queryference.get("begin_date"));
+                if (queryference.get("sort") != null) params.put("sort", queryference.get("sort"));
+            }
+            */
+
+
             client.get(url, params, new JsonHttpResponseHandler() {
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
@@ -212,16 +235,70 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
 
     @Override
     public void onClick(View view, int position) {
-        Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
+       // Intent intent = new Intent(getApplicationContext(), ArticleActivity.class);
         Article article = arrayArticle.get(position);
-        intent.putExtra("url", article.getWebUrl());
-        startActivity(intent);
+        //intent.putExtra("url", article.getWebUrl());
+        //intent.putExtra("article",article);sendIntent.putExtra(Intent.EXTRA_TEXT, "This is my text to send.");
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_share);
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra(Intent.EXTRA_TEXT, article.getWebUrl().toString());
+        intent.setType("text/plain");
+        int requestCode = 100;
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        // set toolbar color and/or setting custom actions before invoking build()
+// Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
+
+        builder.setActionButton(bitmap, "Share Link", pendingIntent, true);
+
+
+        CustomTabsIntent customTabsIntent = builder.build();
+
+        builder.setToolbarColor(ContextCompat.getColor(this, R.color.colorPrimary));
+        builder.addDefaultShareMenuItem();
+
+
+
+// and launch the desired Url with CustomTabsIntent.launchUrl()
+        customTabsIntent.launchUrl(this, Uri.parse(article.getWebUrl().toString()));
+
+
+
+        //startActivity(intent);
+
+        //startActivity(intent);
 
     }
 
     @Override
-    public void onFinishEditDialog(String inputText) {
-        Toast.makeText(this, "Hi, " + inputText, Toast.LENGTH_SHORT).show();
+    public void onFinishEditDialog(QueryClass _queryclass) {
+       // Toast.makeText(this, "Hi, " + inputQueqy.toString(), Toast.LENGTH_SHORT).show();
+         params=new RequestParams();
+        String _param="news_desk:"+ _queryclass.getDeskValue().toString().replace('[','(').replace(']',')');
+        //  RequestParams params=new RequestParams();
+        if(_queryclass.getDeskValue().toArray().length>0){
+            params.put("fq",_param);
+        }
+        String sort=_queryclass.getSort().toString().toLowerCase();
+        params.put("begin_date",_queryclass.getDate().toString());
+        params.put("sort",sort);
+
+        onArticleSearch(null,0);
+        Log.d("param",_param);
+        Log.d("param",_queryclass.getDate().toString());
+        Log.d("param",sort);
+        queryt=null;
+       // params.put("sort",sort););
+
+        Toast.makeText(this, "Hi, " + _param, Toast.LENGTH_SHORT).show();
+       // bindingData(params,null);
+
     }
 
 
@@ -231,10 +308,17 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
             Toast.makeText(this, "Searching for test" + query, Toast.LENGTH_LONG).show();
             AsyncHttpClient client = new AsyncHttpClient();
             String url = "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-            RequestParams params = new RequestParams();
             params.put("api-key", "945373ce2cf842b3a4433c1097bf4840");
             params.put("page", page);
-            params.put("query", query);
+           // params.put("query", query);
+            if (query!=null) params.put("query", query);
+            /*if (queryference!=null) {
+                if (queryference.get("desc") != null) params.put("fq", queryference.get("desc"));
+                if (queryference.get("begin_date") != null)
+                    params.put("begin_date", queryference.get("begin_date"));
+                if (queryference.get("sort") != null) params.put("sort", queryference.get("sort"));
+            }
+           */
             client.get(url, params, new JsonHttpResponseHandler() {
                 @Override
                 public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
@@ -281,10 +365,12 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
         }
     }
 
-    public boolean isOnline() {
-        return true;
-       Runtime runtime = Runtime.getRuntime();
+    private boolean isOnline() {
+       // Toast.makeText(this, "test entries", Toast.LENGTH_SHORT).show();
+
+      /* Runtime runtime = Runtime.getRuntime();
         try {
+            Toast.makeText(this, "test ", Toast.LENGTH_SHORT).show();
             Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
             int exitValue = ipProcess.waitFor();
             return (exitValue == 0);
@@ -292,8 +378,31 @@ public class SearchActivity extends AppCompatActivity implements ItemClickListen
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }*/
+
+     //   return false;
+        ConnectivityManager connec =(ConnectivityManager)getSystemService(getBaseContext().CONNECTIVITY_SERVICE);
+
+        // Check for network connections
+        if ( connec.getNetworkInfo(0).getState() ==
+                android.net.NetworkInfo.State.CONNECTED ||
+                connec.getNetworkInfo(0).getState() ==
+                        android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() ==
+                        android.net.NetworkInfo.State.CONNECTING ||
+                connec.getNetworkInfo(1).getState() == android.net.NetworkInfo.State.CONNECTED ) {
+            Toast.makeText(this, " Connected ", Toast.LENGTH_LONG).show();
+            return true;
+        }else if (
+                connec.getNetworkInfo(0).getState() ==
+                        android.net.NetworkInfo.State.DISCONNECTED ||
+                        connec.getNetworkInfo(1).getState() ==
+                                android.net.NetworkInfo.State.DISCONNECTED  ) {
+            Toast.makeText(this, " Not Connected ", Toast.LENGTH_LONG).show();
+            return false;
         }
         return false;
     }
+    }
 
-}
+

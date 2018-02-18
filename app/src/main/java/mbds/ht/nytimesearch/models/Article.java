@@ -1,5 +1,7 @@
 package mbds.ht.nytimesearch.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -12,7 +14,7 @@ import java.util.ArrayList;
  * Created by Administrator on 2/14/2018.
  */
 
-public class Article {
+public class Article implements Parcelable {
     private String webUrl;
 
     public String getWebUrl() {
@@ -29,8 +31,15 @@ public class Article {
 
     private String headline;
     private String thumbNail;
+
+    public String getSpinset() {
+        return spinset;
+    }
+
+    private String spinset;
     public Article(JSONObject jsonObject){
         try{this.webUrl=jsonObject.getString("web_url");
+            this.spinset=jsonObject.getString("snippet");
         this.headline=jsonObject.getJSONObject("headline").getString("main");
             JSONArray multimedia = jsonObject.getJSONArray("multimedia");
             if (multimedia.length()>0) {
@@ -56,4 +65,44 @@ public class Article {
         }
         return arrayArticle;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+
+        parcel.writeString(webUrl);
+        parcel.writeString(thumbNail);
+        parcel.writeString(headline);
+        parcel.writeString(spinset);
+    }
+
+    public static final Parcelable.Creator<Article> CREATOR = new Parcelable.Creator<Article>()
+    {
+        @Override
+        public Article createFromParcel(Parcel source)
+        {
+            return new Article(source);
+        }
+
+        @Override
+        public Article[] newArray(int size)
+        {
+            return new Article[size];
+        }
+    };
+
+    public Article (Parcel in) {
+        this.webUrl = in.readString();
+        this.thumbNail= in.readString();
+        this.headline = in.readString();
+        this.spinset= in.readString();
+
+    }
+    public Article(){}
+
 }
+
